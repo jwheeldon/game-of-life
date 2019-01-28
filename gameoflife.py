@@ -4,23 +4,26 @@
 import numpy as np
 import pandas as pd
 
-def create_grid(gridsize, seed):
+def create_grid(gridsize,seed):
     if seed == 'blank':
         grid = pd.DataFrame(np.random.randint(1,size=(gridsize,gridsize)))
 
-    if seed == 'oscillator':
+    elif seed == 'oscillator':
         grid = pd.DataFrame(np.random.randint(1,size=(gridsize,gridsize)))
         grid.iloc[2,1:4] = [1,1,1]
 
-    if seed == 'random':
+    elif seed == 'random':
         np.random.seed(10)
         grid = pd.DataFrame(np.random.randint(2,size=(gridsize,gridsize)))
 
-    if seed == 'glider':
+    elif seed == 'glider':
         grid = pd.DataFrame(np.random.randint(1,size=(gridsize,gridsize)))
         grid.iloc[1,1:4] = [1,0,0]
         grid.iloc[2,1:4] = [0,1,1]
         grid.iloc[3,1:4] = [1,1,0]
+
+    else:
+        pass
 
     print('=================================')
     print(grid)
@@ -32,7 +35,7 @@ def create_life(freq):
     tup = [tuple(coord) for coord in freq]
     flat = pd.Series(tup)
     counts = flat.value_counts()
-    new = counts.index[counts==3]
+    new = counts.index[counts == 3]
     return new
 
 def evolve(grid):
@@ -42,7 +45,7 @@ def evolve(grid):
     # Find each live cell co-ordinates and count neighbours
     coord = []
     neighbours_freq = []
-    for x,y in zip(*np.where(grid.values==1)):
+    for x,y in zip(*np.where(grid.values == 1)):
 
         ## Define neighbours per live cell
         neighbours =    [(x-1,y-1), (x-1,y),    (x-1,y+1),
@@ -52,7 +55,7 @@ def evolve(grid):
         ## Count live neighbour interactions per live cell
         live_count = 0
         for i,j in neighbours:
-            if 0<=i<grid_max_x and 0<=j<grid_max_y:
+            if 0 <= i < grid_max_x and 0 <= j < grid_max_y:
                 live_count += grid.iloc[i,j]
                 neighbours_freq.append([i,j])
 
@@ -60,7 +63,7 @@ def evolve(grid):
         coord.append([x,y,live_count])
 
     # Rules of life
-    for row,col,count in coord:
+    for row, col, count in coord:
         grid.iloc[row,col] = count
 
         ## Scenario 0: No interactions
@@ -88,24 +91,24 @@ def evolve(grid):
     print('=================================')
 
 def main(gridsize, steps, seed):
+    seed_valid = ['blank','oscillator','random','glider']
+
     if gridsize < 5:
-        print('Error: Grid size is too small (min 5)')
-        return
+        print('Error: Grid size is too small (min 5).')
 
-    elif seed == 'blank' or seed == 'oscillator' or seed == 'random' or seed == 'glider':
+    elif seed not in seed_valid:
+        print('Error: Invalid seed type. Choose either blank, oscillator, random or glider.')
+
+    else:
         grid = create_grid(gridsize, seed)
-
         for _ in range(steps):
             raw_input('Press any key to evolve:')
             evolve(grid)
-    
-    else:
-        print('Error: Invalid seed type')
-        return
+            
 
 # Game of life (Grid size, number of evolutions, seed type)
 # Scenario 5: Grid with no live cells
-#main(5, 2, 'blank')
+#main(5,2,'blank')
 
 # Scenario 6: Expected game outcome for seeded grid
-main(5, 2, 'oscillator')
+main(5,2,'oscillator')
